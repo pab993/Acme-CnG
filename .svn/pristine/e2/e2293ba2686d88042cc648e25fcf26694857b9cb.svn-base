@@ -1,0 +1,177 @@
+/*
+ * AdministratorController.java
+ * 
+ * Copyright (C) 2017 Universidad de Sevilla
+ * 
+ * The use of this project is hereby constrained to the conditions of the
+ * TDG Licence, a copy of which you may download from
+ * http://www.tdg-seville.info/License.html
+ */
+
+package controllers;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import services.ActorService;
+import services.AnnouncementService;
+import services.CommentService;
+import services.CustomerService;
+import services.MessageService;
+import services.OfferService;
+import services.RequestService;
+import domain.Actor;
+import domain.Customer;
+
+@Controller
+@RequestMapping("/administrator")
+public class AdministratorController extends AbstractController {
+
+	// Constructors -----------------------------------------------------------
+
+	public AdministratorController() {
+		super();
+	}
+
+	// Services
+	//========================================================================
+	
+	@Autowired
+	private OfferService offerService;
+	
+	@Autowired
+	private RequestService requestService;
+	
+	@Autowired
+	private AnnouncementService announcementService;
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	@Autowired
+	private MessageService messageService;
+	
+	@Autowired
+	private CommentService commentService;
+	
+	@Autowired
+	private ActorService actorService;
+	
+	//DashBoard
+	// ============================================================================
+
+	@RequestMapping(value = "/dashboard", method = RequestMethod.GET)
+	public ModelAndView list() {
+
+		ModelAndView result;
+		Double ratioOfOffers = 0.0;
+		Double ratioOfRequests = 0.0;
+		Double avgAnnouncementPerCustomer = 0.0;
+		Double avgApplicationsPerAnnouncements = 0.0;
+		Integer minMessagesSended = 0;
+		Integer maxMessagesSended = 0;
+		Integer avgMessagesSended = 0;
+		Double avgPerActorOfferRequest = 0.0;
+		Double avgPerAdminsAndCustomers = 0.0;
+
+		Collection<Customer> customersMoreApplicationAccepted = new ArrayList<Customer>();
+		Collection<Customer> customersMoreApplicationDenied = new ArrayList<Customer>();
+		Collection<Actor> actorsBetweenAvgTenPerCent = new ArrayList<Actor>();
+		Collection<Actor> findActorWithMoreMessagesSent = new ArrayList<Actor>();
+		Collection<Actor> findActorWithMoreMessagesReceived = new ArrayList<Actor>();
+		
+
+		if (offerService.findAll().isEmpty()) {
+			ratioOfOffers = 0.0;
+		} else {
+			ratioOfOffers = offerService.ratioOfOffers();
+		}
+		if (requestService.findAll().isEmpty()) {
+			ratioOfRequests = 0.0;
+		} else {
+			ratioOfRequests = requestService.ratioOfRequests();
+		}
+		if (announcementService.findAll().isEmpty()) {
+			avgAnnouncementPerCustomer = 0.0;
+		} else {
+			avgAnnouncementPerCustomer = announcementService.avgAnnouncementsPerCustomer();
+		}
+		if (announcementService.findAll().isEmpty()) {
+			avgApplicationsPerAnnouncements = 0.0;
+		} else {
+			avgApplicationsPerAnnouncements = announcementService.avgApplicationsPerAnnouncements();
+		}
+		
+		if (customerService.findAll().isEmpty()) {
+			customersMoreApplicationAccepted = new ArrayList<Customer>();
+		} else {
+			customersMoreApplicationAccepted = customerService.customersMoreApplicationAccepted();
+		}
+		if (customerService.findAll().isEmpty()) {
+			customersMoreApplicationDenied = new ArrayList<Customer>();
+		} else {
+			customersMoreApplicationDenied = customerService.customersMoreApplicationDenied();
+		}
+		if(messageService.minMessagesSended() != null)
+			minMessagesSended = messageService.minMessagesSended();
+		
+		if(messageService.maxMessagesSended() != null)
+			maxMessagesSended = messageService.maxMessagesSended();
+		
+		if(messageService.avgMessagesSended() != null)
+			avgMessagesSended = messageService.avgMessagesSended();
+		
+		if (commentService.findAll().isEmpty()) {
+			avgPerActorOfferRequest = 0.0;
+		} else {
+			avgPerActorOfferRequest = commentService.avgPerActorOfferRequest();
+		}
+		if (commentService.findAll().isEmpty()) {
+			avgPerAdminsAndCustomers = 0.0;
+		} else {
+			avgPerAdminsAndCustomers = commentService.avgPerAdminsAndCustomers();
+		}
+		if (actorService.findAll().isEmpty()) {
+			actorsBetweenAvgTenPerCent = new ArrayList<Actor>();
+		} else {
+			actorsBetweenAvgTenPerCent = commentService.actorsBetweenAvgTenPerCent();
+		}
+		if (actorService.findAll().isEmpty()) {
+			findActorWithMoreMessagesSent = new ArrayList<Actor>();
+		} else {
+			findActorWithMoreMessagesSent = actorService.findActorWithMoreMessagesSent();
+		}
+		if (actorService.findAll().isEmpty()) {
+			findActorWithMoreMessagesReceived = new ArrayList<Actor>();
+		} else {
+			findActorWithMoreMessagesReceived = actorService.findActorWithMoreMessagesReceived();
+		}
+
+		result = new ModelAndView("administrator/dashboard");
+		result.addObject("ratioOfOffers", ratioOfOffers);
+		result.addObject("ratioOfRequest", ratioOfRequests);
+		result.addObject("avgAnnouncementPerCustomer", avgAnnouncementPerCustomer);
+		result.addObject("avgApplicationsPerAnnouncements", avgApplicationsPerAnnouncements);
+		result.addObject("customersMoreApplicationAccepted", customersMoreApplicationAccepted);
+		result.addObject("customersMoreApplicationDenied", customersMoreApplicationDenied);
+		result.addObject("minMessagesSended", minMessagesSended);
+		result.addObject("maxMessagesSended", maxMessagesSended);
+		result.addObject("avgMessagesSended", avgMessagesSended);
+		result.addObject("avgPerActorOfferRequest", avgPerActorOfferRequest);
+		result.addObject("avgPerAdminsAndCustomers", avgPerAdminsAndCustomers);
+		result.addObject("actorsBetweenAvgTenPerCent", actorsBetweenAvgTenPerCent);
+		result.addObject("findActorWithMoreMessagesSent", findActorWithMoreMessagesSent);
+		result.addObject("findActorWithMoreMessagesReceived", findActorWithMoreMessagesReceived);
+
+		result.addObject("requestURI", "administrator/dashboard.do");
+
+		return result;
+	}
+
+}

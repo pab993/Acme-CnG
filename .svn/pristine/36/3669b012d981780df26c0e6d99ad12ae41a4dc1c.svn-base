@@ -1,0 +1,33 @@
+package repositories;
+
+import java.util.Collection;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import domain.Offer;
+
+@Repository
+public interface OfferRepository extends JpaRepository<Offer, Integer>{
+
+	@Query("select o from Offer o where o.customer.id=?1")
+	Collection<Offer> findAllByCustomer(int id);
+	
+	@Query("select o from Offer o where o.customer.id!=?1 and o.ban = false")
+	Collection<Offer> findAllByNotCustomer(int id);
+
+	@Query("select o from Offer o where (o.title like %?1% or o.description like %?1% or o.originPlace.place like %?1% or o.destinyPlace.place like %?1%) and (o.ban = false or o.customer.id = ?2)")
+	Collection<Offer> searchOfferByWords(String keyWord, int id);
+
+	// Ratio of offers
+	@Query("select 1.0*count(o)/(select count(a) from Announcement a) from Offer o")
+	Double ratioOfOffers();
+	
+	@Query("select o from Offer o where o.ban = false or o.customer.id = ?1")
+	Collection<Offer> findAllFilter(int id);
+	
+	@Query("select o from Offer o where o.title like %?1% or o.description like %?1% or o.originPlace.place like %?1% or o.destinyPlace.place like %?1%")
+	Collection<Offer> searchOfferByWordsAdmin(String keyWord);
+	
+}

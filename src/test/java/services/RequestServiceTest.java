@@ -1,0 +1,297 @@
+package services;
+
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.Assert;
+
+import utilities.AbstractTest;
+import domain.Address;
+import domain.Customer;
+import domain.Request;
+
+@Transactional
+@ContextConfiguration(locations = {
+	"classpath:spring/junit.xml"
+})
+@RunWith(SpringJUnit4ClassRunner.class)
+public class RequestServiceTest extends AbstractTest {
+	
+
+	// The SUT
+	// ====================================================
+
+	@Autowired
+	private RequestService	requestService;
+	
+	@Autowired
+	private CustomerService	customerService;
+	
+	// Tests
+	// ====================================================
+	
+//	// Post an offer in which he or she advertises that he's going to move from a place to
+//	// another place and would like to share to his o her car with someone else
+//	
+//	public void listRequestTest(final String username, final Class<?> expected) {
+//
+//		Class<?> caught;
+//		
+//		caught= null;
+//
+//		try {
+//			this.authenticate(username);
+//			this.requestService.findAll();
+//			this.unauthenticate();
+//		} catch (final Throwable oops) {
+//			caught = oops.getClass();
+//
+//		}
+//		this.checkExceptions(expected, caught);
+//	}
+//	
+//	// Drivers ---------------------------------------------------------------
+//
+//	@Test
+//	public void driverRequestList() {
+//		final Object testingData[][] = {
+//			// List de Request con customer -> true
+//			{"customer1", null},
+//			
+//			// List de Request con admin -> true
+//			{"admin", null},
+//			
+//			// List de Request con un usuario no autentificado -> false
+//			//{null, IllegalArgumentException.class}  Si descomentamos, da error.
+//		};
+//
+//		for (int i = 0; i < testingData.length; i++)
+//			this.listRequestTest((String) testingData[i][0], (Class<?>) testingData[i][1]);
+//
+//	}
+	
+//}
+	/*
+	 * Post a request in which he or she informs that he or she wishes to move
+	 * from a place to another one and would like to find someone with whom he
+	 * or she can share the trip.
+	 * 
+	 * En este caso de uso se crea una 'request' que será mostrada posteriormente a todos los 'customer'. 
+	 * En este caso, esta acción sólo puede ser realizada por un 'customer' autentificado.
+	 * Comprobaremos a continuación, que no es posible crear cicha 'request' si no estás autentificado como
+	 * 'customer', introduciendo un usuario autentificado como 'administrator' o mediante con parámetros inválidos.
+	 */
+	public void requestCreateTest(final String username, final String title, final String description, final Date moment, Address originPlace, Address destinationPlace, final String placeOrigin, final Double coordinateX, final Double coordinateY,
+		final String placeDestiny, final Double coordinateXX, final Double coordinateYY, final Class<?> expected) {
+	
+		Class<?> caught = null;
+	
+		try {
+	
+			this.authenticate(username);
+	
+			originPlace = new Address();
+			destinationPlace = new Address();
+	
+			originPlace.setPlace(placeOrigin);
+			originPlace.setCoordinateX(coordinateX);
+			originPlace.setCoordinateY(coordinateY);
+			destinationPlace.setPlace(placeDestiny);
+			destinationPlace.setCoordinateX(coordinateXX);
+			destinationPlace.setCoordinateY(coordinateYY);
+			
+			Customer customer = customerService.findByPrincipal();
+	
+			final Request request = new Request();
+	
+			request.setTitle(title);
+			request.setDescription(description);
+			request.setMoment(moment);
+			request.setOriginPlace(originPlace);
+			request.setDestinyPlace(destinationPlace);
+			request.setCustomer(customer);
+			
+			this.requestService.checkIfCustomer();
+			this.requestService.save(request);
+	
+			this.unauthenticate();
+	
+		} catch (final Throwable oops) {
+	
+			caught = oops.getClass();
+	
+		}
+	
+		this.checkExceptions(expected, caught);
+	}
+	
+	/*
+	 * Search for offers and requests using a single keyword that must appear
+	 * somewhere in their titles, descriptions, or places.
+	 * 
+	 * En este caso de uso se lleva a cabo la búsqueda de 'requests' a través de de una palabra clave.
+	 * Esta opción es accesible para cualquier 'customer'. Por ello, vamos a intentar
+	 * acceder con un usuario 'admin' y otro no autenticado.
+	 */
+	public void requestSearch(final String username, final String keyword, final Class<?> expected) {
+		Class<?> caught = null;
+		try {
+
+			this.authenticate(username);
+
+			this.requestService.checkIfCustomer();
+			this.requestService.getRequestByKeyWord(keyword);
+
+			this.unauthenticate();
+
+		} catch (final Throwable oops) {
+
+			caught = oops.getClass();
+
+		}
+
+		this.checkExceptions(expected, caught);
+	}
+	
+	
+	public void requestFindOne(final int id, final Class<?> expected){
+		
+		Class<?> caught = null;
+		
+		try {
+			
+			Request request = requestService.findOne(id);
+			Assert.notNull(request);
+			
+		} catch (final Throwable oops) {
+			
+			caught = oops.getClass();
+	
+		}
+	
+		this.checkExceptions(expected, caught);
+	}
+	
+	public void requestDelete(final String username, final Request request, final Class<?> expected){
+		
+		Class<?> caught = null;
+		
+		try {
+			
+			authenticate(username);
+			requestService.delete(request);
+			unauthenticate();
+			
+		} catch (final Throwable oops) {
+			
+			caught = oops.getClass();
+	
+		}
+	
+		this.checkExceptions(expected, caught);
+	}
+	
+
+	// Drivers
+	// ====================================================
+
+	@Test
+	public void driverRequestCreate() {
+	
+		Date date = new Date(System.currentTimeMillis()-1000);
+		
+		final Address origin = new Address();
+		final Address destination = new Address();
+	
+		final Object testingData[][] = {
+			// Creación con customer y propiedades correctas -> true
+			{
+				"customer1", "title", "description", date, origin, destination, "origin address", 1.0, -13.0, "destination address", 17.0, -10.0, null
+			},
+			// Creación con admin -> false
+			{
+				"admin", "title", "description", date, origin, destination, "origin address", 1.30007, -113.61082, "destination address", 17.85281, -10.87204, IllegalArgumentException.class
+			},
+			// Creación con usuario no autentificado -> false
+			{
+				null, "title", "description", date, origin, destination, "origin address", 1.30007, -113.61082, "destination address", 17.85281, -10.87204, IllegalArgumentException.class
+			},
+//			// Creación con fecha superior a la actual -> false
+//			{
+//				"customer3", "title", "description", date, origin, destination, "origin address", "1.30007", "-113.61082", "destination address", "17.85281", "-10.87204", IllegalArgumentException.class
+//			}
+		};
+		
+		for (int i = 0; i < testingData.length; i++)
+			this.requestCreateTest((String) testingData[i][0], (String) testingData[i][1], (String) testingData[i][2], (Date) testingData[i][3], (Address) testingData[i][4], (Address) testingData[i][5], (String) testingData[i][6],
+				(Double) testingData[i][7], (Double) testingData[i][8], (String) testingData[i][9],(Double) testingData[i][10] ,(Double) testingData[i][11], (Class<?>) testingData[i][12]);
+		}
+		
+	@Test
+	public void driverRequestSearch() {
+		final Object testingData[][] = {
+			// Si estamos autentificado como customer -> true
+			{
+				"customer1", "destiny", null
+			},
+			// Si estamos autentificado como admin -> false
+			{
+				"admin", "destiny", IllegalArgumentException.class
+			},
+			// Si no estamos autentificado -> false
+			{
+				null, "destiny", IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.requestSearch((String) testingData[i][0], (String) testingData[i][1], (Class<?>) testingData[i][2]);
+	}
+	
+	
+	@Test
+	public void driverRequestFindOne() {
+		final Object testingData[][] = {
+			// Id de una offer -> true
+			{
+				40, null
+			},
+			// Una offer con id 0 -> false
+			{
+				0, IllegalArgumentException.class
+			},
+			// Una id que no es de una offer -> false
+			{
+				8, IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.requestFindOne((int) testingData[i][0], (Class<?>) testingData[i][1]);
+	}
+	
+	@Test
+	public void driverRequestDelete() {
+		final Object testingData[][] = {
+			// request de su customer -> true
+			{
+				"customer1" ,requestService.findOne(40), null
+			},
+//			// Una request sin auth -> false
+			{
+				null, requestService.findOne(40), IllegalArgumentException.class
+			},
+//			// intentar borrar una offer que no te pertenece -> false
+			{
+				"customer2", requestService.findOne(40), IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.requestDelete((String) testingData[i][0], (Request) testingData[i][1], (Class<?>) testingData[i][2]);
+	}
+	
+}

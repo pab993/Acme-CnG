@@ -1,0 +1,155 @@
+
+package services;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
+
+import repositories.CustomerRepository;
+import security.Authority;
+import security.LoginService;
+import security.UserAccount;
+import domain.Customer;
+import forms.CustomerForm;
+
+@Transactional
+@Service
+public class CustomerService {
+
+	@Autowired
+	private CustomerRepository	customerRepository;
+
+
+	public CustomerService() {
+		super();
+	}
+
+	public Customer create() {
+		
+		Customer customer = new Customer();
+
+		UserAccount userAccount = new UserAccount();	// añado autoridad CUSTOMER a la cuenta de usuario del customer
+		Collection<Authority> authorities = new ArrayList<Authority>();
+		Authority authority = new Authority();
+		authority.setAuthority("CUSTOMER");
+		authorities.add(authority);
+		userAccount.setAuthorities(authorities);
+
+		customer.setUserAccount(userAccount);
+
+		return customer;
+	}
+
+	public Customer save(Customer customer) {
+		
+		Assert.notNull(customer);
+
+		Customer saved = customerRepository.save(customer);
+		Assert.isTrue(customerRepository.exists(saved.getId()));
+
+		return saved;
+	}
+
+
+	
+	//Ancillary methods
+	//====================================================================
+
+	@Autowired
+	private Validator	validator;
+
+
+	public Customer reconstruct(CustomerForm customerForm, BindingResult binding) {
+		// TODO Auto-generated method stub
+
+		Customer customer = create();
+
+		customer.setName(customerForm.getName());
+		customer.setSurname(customerForm.getSurname());
+		customer.setEmail(customerForm.getEmail());
+		customer.setPhoneNumber(customerForm.getPhone());
+		customer.getUserAccount().setUsername(customerForm.getUsername());
+		customer.getUserAccount().setPassword(new Md5PasswordEncoder().encodePassword(customerForm.getPassword(), null));
+
+		customer.setId(customerForm.getId());
+		customer.setVersion(customerForm.getVersion());
+
+		
+
+		if (!customerForm.getPassword().equals(customerForm.getRepeatPassword())) {
+			customerForm.setRepeatPassword(null);
+		}
+		
+		validator.validate(customerForm, binding);
+
+		return customer;
+	}
+
+	// Supporting services
+	//====================================================================
+
+	// Simple CRUD methods
+	//====================================================================
+
+	public Customer findOne(int customerId) {
+		Assert.isTrue(customerRepository.exists(customerId));
+		Assert.isTrue(customerId != 0);
+		Customer result;
+
+		result = customerRepository.findOne(customerId);
+		//Assert.notNull(result);
+		return result;
+	}
+
+	public Collection<Customer> findAll() {
+		Collection<Customer> result;
+
+		result = customerRepository.findAll();
+
+		return result;
+	}
+
+	// Other business methods
+	// ===================================================================
+
+	public Customer findByPrincipal() {
+		Customer result;
+		UserAccount userAccount;
+
+		userAccount = LoginService.getPrincipal();
+		Assert.notNull(userAccount);
+		Assert.isTrue(userAccount.getId() != 0);
+
+		result = customerRepository.findByUserAccountId(userAccount.getId());
+		Assert.notNull(result);
+
+		return result;
+	}
+
+	public Collection<Customer> customersMoreApplicationAccepted() {
+		Collection<Customer> customers;
+
+		customers = customerRepository.customersMoreApplicationAccepted();
+		Assert.notNull(customers);
+
+		return customers;
+	}
+
+	public Collection<Customer> customersMoreApplicationDenied() {
+		Collection<Customer> customers;
+
+		customers = customerRepository.customersMoreApplicationDenied();
+		Assert.notNull(customers);
+
+		return customers;
+	}
+
+}

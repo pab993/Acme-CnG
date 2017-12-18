@@ -1,0 +1,255 @@
+package services;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.Assert;
+
+import domain.Address;
+import domain.Customer;
+import domain.Offer;
+import domain.Request;
+
+import utilities.AbstractTest;
+
+@Transactional
+@ContextConfiguration(locations = {
+	"classpath:spring/junit.xml"
+})
+@RunWith(SpringJUnit4ClassRunner.class)
+public class OfferServiceTest extends AbstractTest {
+	
+	// The SUT
+	// ====================================================
+
+	@Autowired
+	private OfferService offerService;
+
+	@Autowired
+	private CustomerService	customerService;
+	
+	// Tests
+	// ====================================================
+	
+	/*
+	 * Search for offers and requests using a single keyword that must appear
+	 * somewhere in their titles, descriptions, or places.
+	 * 
+	 * En este caso de uso se lleva a cabo la búsqueda de 'offers' a través de de una palabra clave.
+	 * Esta opción es accesible para cualquier 'customer'. Por ello, vamos a intentar
+	 * acceder con un usuario 'admin' y otro no autenticado.
+	 */
+	public void offerSearch(final String username, final String keyword, final Class<?> expected) {
+		Class<?> caught = null;
+		try {
+
+			this.authenticate(username);
+
+			this.offerService.checkIfCustomer();
+			this.offerService.getOfferByKeyWord(keyword);
+
+			this.unauthenticate();
+
+		} catch (final Throwable oops) {
+
+			caught = oops.getClass();
+
+		}
+
+		this.checkExceptions(expected, caught);
+	}
+	
+	public void offerCreateTest(final String username, final String title, final String description, final Date moment, Address originPlace, Address destinationPlace, final String placeOrigin, final Double coordinateX, final Double coordinateY,
+			final String placeDestiny, final Double coordinateXX, final Double coordinateYY, final Class<?> expected) {
+		
+			Class<?> caught = null;
+		
+			try {
+		
+				this.authenticate(username);
+		
+				originPlace = new Address();
+				destinationPlace = new Address();
+		
+				originPlace.setPlace(placeOrigin);
+				originPlace.setCoordinateX(coordinateX);
+				originPlace.setCoordinateY(coordinateY);
+				destinationPlace.setPlace(placeDestiny);
+				destinationPlace.setCoordinateX(coordinateXX);
+				destinationPlace.setCoordinateY(coordinateYY);
+				
+				Customer customer = customerService.findByPrincipal();
+		
+				final Offer offer = new Offer();
+		
+				offer.setTitle(title);
+				offer.setDescription(description);
+				offer.setMoment(moment);
+				offer.setOriginPlace(originPlace);
+				offer.setDestinyPlace(destinationPlace);
+				offer.setCustomer(customer);
+				
+				this.offerService.checkIfCustomer();
+				this.offerService.save(offer);
+		
+				this.unauthenticate();
+		
+			} catch (final Throwable oops) {
+		
+				caught = oops.getClass();
+		
+			}
+		
+			this.checkExceptions(expected, caught);
+		}
+	
+	public void offerFindOne(final int id, final Class<?> expected){
+		
+		Class<?> caught = null;
+		
+		try {
+			
+			Offer offer = offerService.findOne(id);
+			Assert.notNull(offer);
+			
+		} catch (final Throwable oops) {
+			
+			caught = oops.getClass();
+	
+		}
+	
+		this.checkExceptions(expected, caught);
+	}
+	
+	public void offerDelete(final String username, final Offer offer, final Class<?> expected){
+		
+		Class<?> caught = null;
+		
+		try {
+			
+			authenticate(username);
+			offerService.delete(offer);
+			unauthenticate();
+			
+		} catch (final Throwable oops) {
+			
+			caught = oops.getClass();
+	
+		}
+	
+		this.checkExceptions(expected, caught);
+	}
+
+	
+	// Drivers
+	// ====================================================
+	
+	@Test
+	public void driverOfferSearch() {
+		final Object testingData[][] = {
+			// Si estamos autentificado como customer -> true
+			{
+				"customer1", "destiny", null
+			},
+			// Si estamos autentificado como admin -> false
+			{
+				"admin", "destiny", IllegalArgumentException.class
+			},
+			// Si no estamos autentificado -> false
+			{
+				null, "destiny", IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.offerSearch((String) testingData[i][0], (String) testingData[i][1], (Class<?>) testingData[i][2]);
+	}
+
+	
+	@Test
+	public void driverOfferCreate() {
+	
+		Date date = new Date(System.currentTimeMillis()-1000);
+		
+		Calendar ahoraCal = Calendar.getInstance();
+		ahoraCal.set(2015,1,7);
+		Date date2 = ahoraCal.getTime();
+		
+		final Address origin = new Address();
+		final Address destination = new Address();
+	
+		final Object testingData[][] = {
+			// Creación con customer y propiedades correctas -> true
+			{
+				"customer1", "title", "description", date, origin, destination, "origin address", 1.0, -13.0, "destination address", 17.0, -10.0, null
+			},
+			// Creación con admin -> false
+			{
+				"admin", "title", "description", date, origin, destination, "origin address", 1.30007 , -113.61082, "destination address", 17.85281, -10.87204, IllegalArgumentException.class
+			},
+			// Creación con usuario no autentificado -> false
+			{
+				null, "title", "description", date, origin, destination, "origin address", 1.30007, -113.61082, "destination address", 17.85281, -10.87204, IllegalArgumentException.class
+			},
+			// Creación con fecha superior a la actual -> false
+//			{
+//				"customer3", "title", "description", date2, origin, destination, "origin address", 1.30007, -113.61082, "destination address", 17.85281, -10.87204, IllegalArgumentException.class
+//			}
+	};
+		
+		for (int i = 0; i < testingData.length; i++)
+			this.offerCreateTest((String) testingData[i][0], (String) testingData[i][1], (String) testingData[i][2], (Date) testingData[i][3], (Address) testingData[i][4], (Address) testingData[i][5], (String) testingData[i][6],
+				(Double) testingData[i][7], (Double) testingData[i][8], (String) testingData[i][9],(Double) testingData[i][10] ,(Double) testingData[i][11], (Class<?>) testingData[i][12]);
+		}
+
+	@Test
+	public void driverOfferFindOne() {
+		final Object testingData[][] = {
+			// Id de una offer -> true
+			{
+				44, null
+			},
+			// Una offer con id 0 -> false
+			{
+				0, IllegalArgumentException.class
+			},
+			// Una id que no es de una offer -> false
+			{
+				8, IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.offerFindOne((int) testingData[i][0], (Class<?>) testingData[i][1]);
+	}
+	
+	
+	@Test
+	public void driverOfferDelete() {
+		final Object testingData[][] = {
+			// offer de su customer -> true
+			{
+				"customer4" ,offerService.findOne(45), null
+			},
+//			// Una offer con id 0 -> false
+			{
+				null, offerService.findOne(45), IllegalArgumentException.class
+			},
+//			// intentar borrar una offer que no te pertenece -> false
+			{
+				"customer4", offerService.findOne(44), IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.offerDelete((String) testingData[i][0], (Offer) testingData[i][1], (Class<?>) testingData[i][2]);
+	}
+	
+}
+
+
+

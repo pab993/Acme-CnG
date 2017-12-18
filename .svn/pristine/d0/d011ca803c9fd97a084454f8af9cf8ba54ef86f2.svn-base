@@ -1,0 +1,25 @@
+# messages.properties
+#
+# Copyright (C) 2017 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+application.status				= Status
+announcement.title				= Title
+announcement.description		= Description
+announcement.moment				= Moment
+
+announcement.newApplication 	= New application
+
+application.submit				= Submit
+application.cancel 				= Cancel
+
+application.confirm.accepted 	= ¿Are you sure that you wish to accepted the application?
+application.accepted			= Accepted application
+	
+application.confirm.denied		= ¿Are you sure that you wish to denied the application?
+application.denied				= Denied application
+
+application.commit.error		= Can't complete your action. You have already made an application prior to that announcement.

@@ -1,0 +1,126 @@
+
+package controllers.Customer;
+
+import java.util.Collection;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import services.OfferService;
+import controllers.AbstractController;
+import domain.Offer;
+
+@Controller
+@RequestMapping("/offer/customer")
+public class OfferCustomerController extends AbstractController {
+
+	//Services ===============================================================================
+
+	@Autowired
+	private OfferService	offerService;
+
+
+	//Constructor ============================================================================
+
+	public OfferCustomerController() {
+		super();
+	}
+
+	//SearchForm ==============================================================================
+
+	@RequestMapping(value = "/searchForm", method = RequestMethod.GET)
+	public ModelAndView listSearch() {
+		ModelAndView result;
+		Collection<Offer> offers;
+		Boolean firstTime;
+		
+
+		offers = offerService.findAllFilter();
+		firstTime = true;
+
+		result = new ModelAndView("offer/search");
+		result.addObject("offers", offers);
+		result.addObject("requestURI", "offer/customer/searchForm.do");
+		result.addObject("firstTime", firstTime);
+
+		return result;
+	}
+
+	//Search ==============================================================================	
+
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	public ModelAndView search(@RequestParam("keyword") String keyword) {
+		ModelAndView result;
+		Collection<Offer> offers;
+
+		offers = offerService.getOfferByKeyWord(keyword);
+
+		result = new ModelAndView("offer/search");
+		result.addObject("offers", offers);
+
+		return result;
+	}
+
+	//Creation 
+	// ====================================================================================
+
+	@RequestMapping(value = "/create", method = RequestMethod.GET)
+	public ModelAndView create() {
+		ModelAndView result;
+		Offer offer;
+
+		offer = offerService.create();
+
+		result = createEditModelAndView(offer);
+
+		return result;
+	}
+
+	@RequestMapping(value = "/edit", method = RequestMethod.POST, params = "save")
+	public ModelAndView save(@Valid Offer offer, BindingResult binding) {
+		ModelAndView result;
+
+		if (binding.hasErrors()) {
+			result = createEditModelAndView(offer);
+		} else {
+			try {
+
+				offerService.save(offer);
+				result = new ModelAndView("redirect:/welcome/index.do");
+			} catch (Throwable oops) {
+				result = createEditModelAndView(offer, "announcement.commit.error");
+			}
+		}
+		return result;
+	}
+
+	// The ancillary methods 
+	// ====================================================================================
+
+	protected ModelAndView createEditModelAndView(Offer offer) {
+		ModelAndView result;
+
+		result = createEditModelAndView(offer, null);
+
+		return result;
+	}
+
+	protected ModelAndView createEditModelAndView(Offer offer, String message) {
+		ModelAndView result;
+
+		result = new ModelAndView("announcement/editOffer");
+
+		result.addObject("offer", offer);
+		result.addObject("message", message);
+
+		return result;
+	}
+
+}

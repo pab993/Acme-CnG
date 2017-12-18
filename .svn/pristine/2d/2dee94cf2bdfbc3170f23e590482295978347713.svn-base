@@ -1,0 +1,135 @@
+package services;
+
+import java.util.Collection;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import domain.Customer;
+import domain.Offer;
+
+import repositories.OfferRepository;
+import security.Authority;
+import security.LoginService;
+import security.UserAccount;
+
+@Service
+@Transactional
+public class OfferService {
+	
+	// Repositories
+	//====================================================================
+
+	@Autowired
+	private OfferRepository	offerRepository;
+	
+	// Supporting services
+	//====================================================================
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	// Simple CRUD methods
+	//====================================================================
+	
+	public Offer findOne(int offerId){
+		Assert.isTrue(offerId != 0);
+		Offer result;
+
+		result = offerRepository.findOne(offerId);
+
+		return result;
+	}
+
+	public Collection<Offer> findAll() {
+		Collection<Offer> result;
+
+		result = offerRepository.findAll();
+
+		return result;
+	}
+
+	public Offer create() {
+		Offer result;
+		Customer customer;
+		
+		UserAccount userAccount = LoginService.getPrincipal();
+		Authority i = new Authority();
+		i.setAuthority("CUSTOMER");
+		Assert.isTrue(userAccount.getAuthorities().contains(i));
+
+		customer= customerService.findByPrincipal();
+		
+		result = new Offer();
+		result.setBan(false);
+		result.setCustomer(customer);
+
+		return result;
+	}
+
+	public Offer save(Offer offer) {
+		Assert.notNull(offer);
+		Offer result;
+		Customer customer;
+
+		UserAccount userAccount = LoginService.getPrincipal();
+		Authority i = new Authority();
+		i.setAuthority("CUSTOMER");
+		Assert.isTrue(userAccount.getAuthorities().contains(i));
+		
+		customer = customerService.findByPrincipal();
+		Assert.isTrue(customer.equals(offer.getCustomer()));
+
+		result = offerRepository.save(offer);
+
+		return result;
+	}
+
+	public void delete(Offer offer) {
+		Assert.notNull(offer);
+		Customer customer;
+
+		UserAccount userAccount = LoginService.getPrincipal();
+		Authority i = new Authority();
+		i.setAuthority("CUSTOMER");
+		Assert.isTrue(userAccount.getAuthorities().contains(i));
+		
+		customer = customerService.findByPrincipal();
+		Assert.isTrue(customer.equals(offer.getCustomer()));
+
+		offerRepository.delete(offer);
+	}
+	
+	// Other business methods
+	// ===================================================================
+	
+	public Collection<Offer> getOfferByKeyWord(String keyWord){
+		Assert.notNull(keyWord);
+		Collection<Offer> result;
+		
+		result = offerRepository.searchOfferByWords(keyWord);
+		
+		return result;
+	}
+	
+	public Double ratioOfOffers(){
+		Double result;
+		
+		result = offerRepository.ratioOfOffers();
+		Assert.notNull(result);
+		
+		return result;
+	}
+	
+	public void checkIfCustomer(){
+		Customer principal;
+		
+		principal = customerService.findByPrincipal();
+		Assert.notNull(principal);
+		Assert.isInstanceOf(Customer.class, principal);
+	}
+
+}

@@ -1,0 +1,19 @@
+package repositories;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import domain.Announcement;
+
+@Repository
+public interface AnnouncementRepository extends JpaRepository<Announcement, Integer>{
+
+	//Average number of offers and request per customer.
+	@Query("select avg(c.announcements.size) from Customer c")
+	Double avgAnnouncementsPerCustomer();
+	
+	//Average number of applications per offer or request.
+	@Query("select avg(a.applications.size) from Announcement a")
+	Double avgApplicationsPerAnnouncements();
+}

@@ -1,0 +1,28 @@
+# messages.properties
+#
+# Copyright (C) 2017 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+message.name 				= Message
+
+message.title				= Title
+message.text				= Text
+message.attachment			= Attachment
+message.sender				= Send by
+message.recipient			= Send to
+choose						= Choose the recipient
+
+message.reply			 	= Reply
+message.forward				= Forward
+message.delete				= Delete
+message.delete.accepted		= Are you sure?
+message.yes					= Yes
+message.no					= No
+
+message.commit.error		= Cannot commit the operation
+
+message.submit		 		= Submit
+cancel 						= Cancel

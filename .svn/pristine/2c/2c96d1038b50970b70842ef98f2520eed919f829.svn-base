@@ -1,0 +1,26 @@
+# messages.properties
+#
+# Copyright (C) 2017 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+request.searchText			= It introduces the title, description, origin place or destiny place of a request.
+request.search				= Search
+
+request.title				= Title
+request.description			= Description
+request.moment				= Moment
+request.originPlace			= Origin Place
+request.originXPlace		= Origin Coord.X
+request.originYPlace		= Origin Coord.Y
+request.destinyPlace		= Destiny Place
+request.destinyXPlace		= Destiny Coord.X
+request.destinyYPlace		= Destiny Coord.Y
+request.actor.display 		= View profile
+request.display 			= Display request
+postComment 				= Post comment
+
+request.newApplication 		= New application
+request.listApplication		= Applications

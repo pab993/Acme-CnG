@@ -1,0 +1,114 @@
+package services;
+
+import java.util.Collection;
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import domain.Actor;
+import domain.Comentable;
+import domain.Comment;
+import repositories.CommentRepository;
+
+@Service
+@Transactional
+public class CommentService {
+
+	// Repositories
+	//====================================================================
+
+	@Autowired
+	private CommentRepository	commentRepository;
+	
+	// Supporting services
+	//====================================================================
+
+	@Autowired
+	private ActorService actorService;
+	
+	// Simple CRUD methods
+	//====================================================================
+	
+	public Comment findOne(int commentId){
+		Assert.isTrue(commentId != 0);
+		Comment result;
+
+		result = commentRepository.findOne(commentId);
+
+		return result;
+	}
+
+	public Collection<Comment> findAll() {
+		Collection<Comment> result;
+
+		result = commentRepository.findAll();
+
+		return result;
+	}
+	
+	public Comment create(Comentable comentable) {
+		Comment result;
+		Actor principal;
+		Date createMoment;
+		
+		principal = actorService.findByPrincipal();
+		Assert.notNull(principal);
+
+		createMoment = new Date(System.currentTimeMillis());
+		result = new Comment();
+		result.setCreateMoment(createMoment);
+		result.setActor(principal);
+		comentable.getComments().add(result);
+		result.setComentable(comentable);
+
+
+		return result;
+	}
+	
+	public Comment save(Comment comment) {
+		Assert.notNull(comment);
+		Comment result;
+		Actor principal;
+
+		principal = actorService.findByPrincipal();
+		Assert.notNull(principal);
+		result = commentRepository.save(comment);
+
+		return result;
+	}
+	
+	
+	// Other business methods
+	// ===================================================================
+	
+	public Double avgPerActorOfferRequest(){
+		Double result;
+		
+		result = commentRepository.avgPerActorOfferRequest();
+		Assert.notNull(result);
+		
+		return result;
+	}
+	
+	public Double avgPerAdminsAndCustomers(){
+		Double result;
+		
+		result = commentRepository.avgPerAdminsAndCustomers();
+		Assert.notNull(result);
+		
+		return result;
+	}
+	
+	public Collection<Actor> actorsBetweenAvgTenPerCent(){
+		Collection<Actor>result;
+		
+		result = commentRepository.actorsBetweenAvgTenPerCent();
+		Assert.notNull(result);
+		
+		return result;
+	}
+}

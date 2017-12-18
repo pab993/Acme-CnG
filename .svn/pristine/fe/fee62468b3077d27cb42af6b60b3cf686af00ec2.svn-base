@@ -1,0 +1,28 @@
+# messages_es.properties
+#
+# Copyright (C) 2017 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+offer.searchText			= Introduzca el título, descripción, lugar de origen o lugar de destino de una oferta.
+offer.search				= Buscar
+
+offer.title					= Título
+offer.description			= Descripcion
+offer.moment				= Momento
+
+offer.originPlace			= Lugar de origen
+offer.destinyPlace			= Lugar de destino	
+offer.customer.display 		= Ver perfil del customer
+
+offer.originPlace			= Lugar de origen
+
+offer.originXPlace			= Origen Coord.X
+offer.originYPlace			= Origen Coord.Y
+offer.destinyPlace			= Lugar de destino
+offer.destinyXPlace			= Destino Coord.X
+offer.destinyYPlace			= Destino Coord.Y
+
+offer.display =  Ver oferta

@@ -1,0 +1,58 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+
+<%@taglib prefix="jstl" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles"%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@taglib prefix="security"
+	uri="http://www.springframework.org/security/tags"%>
+<%@taglib prefix="display" uri="http://displaytag.sf.net"%>
+<%@ taglib prefix="acme" tagdir="/WEB-INF/tags"%>
+
+<!-- Listing table -->
+
+<display:table name="applications" id="row" requestURI="${requestURI}"
+	pagesize="5" class="displaytag">
+
+	<spring:message code="application.status" var="statusHeader" />
+	<display:column property="status" title="${statusHeader}" />
+
+	<spring:message code="announcement.title" var="titleHeader" />
+	<display:column property="announcement.title" title="${titleHeader}" />
+
+	<spring:message code="announcement.description" var="descriptionHeader" />
+	<display:column property="announcement.description"
+		title="${descriptionHeader}" />
+
+	<spring:message code="announcement.moment" var="momentHeader" />
+	<display:column property="announcement.moment" title="${momentHeader}" />
+
+	<security:authorize access="hasRole('CUSTOMER')">
+		<jstl:choose>
+			<jstl:when test="${owner}">
+				<display:column>
+					<a href="application/customer/accepted.do?applicationId=${row.id}"
+						onclick="return confirm('<spring:message code = "application.confirm.accepted"/>')">
+						<spring:message code="application.accepted" />
+					</a>
+				</display:column>
+			</jstl:when>
+		</jstl:choose>
+
+		<jstl:choose>
+			<jstl:when test="${owner}">
+				<display:column>
+					<a href="application/customer/denied.do?applicationId=${row.id}"
+						onclick="return confirm('<spring:message code = "application.confirm.denied"/>')">
+						<spring:message code="application.denied" />
+					</a>
+				</display:column>
+			</jstl:when>
+		</jstl:choose>
+	</security:authorize>
+</display:table>
+
+
+<acme:cancel url="welcome/index.do" code="application.cancel" />

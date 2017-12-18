@@ -1,0 +1,306 @@
+package services;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import utilities.AbstractTest;
+import domain.Actor;
+import domain.Message;
+
+@ContextConfiguration(locations = {
+	"classpath:spring/junit.xml"
+})
+@RunWith(SpringJUnit4ClassRunner.class)
+@Transactional
+public class MessageServiceTest extends AbstractTest {
+
+	// The SUT
+	// ====================================================
+	
+	@Autowired
+	private MessageService messageService;
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	@Autowired
+	private ActorService actorService;
+	
+	// Tests
+	// ====================================================
+	
+	/*
+	 * Exchange messages with others actors.
+	 * 
+	 * En este caso de uso se crean y se guardan los messages que queramos intercambiar con otros actores siempre y cuando
+	 * nos encontramos autentificados, por lo tanto es accesible para cualquier 'actor'.
+	 * Para provocar el error, se intenta guardar mediante con un usuario no autentificado e incluyendo un recipientId no válido.
+	 */
+	
+	protected void createTest(String username, Class<?> expected) {
+		// TODO Auto-generated method stub
+		Class<?> caught;
+		
+		caught = null;
+		try{
+			
+			authenticate(username);
+			messageService.create();
+			unauthenticate();
+			
+		}catch (Throwable oops) {
+			caught = oops.getClass();
+		}
+		checkExceptions(expected, caught);
+		
+	}
+	
+	protected void saveTest(String username, int idRecipient, Class<?> expected) {
+		Class<?> caught;
+		
+		caught = null;
+		try{
+			
+			authenticate(username);
+			
+			Message message = messageService.create();
+			message.setText("test");
+			message.setTitle("test");
+			message.setAttachment("https://login.live.com");
+			
+			message.setActorRecipient(customerService.findOne(idRecipient));
+			messageService.save(message);
+			
+			unauthenticate();
+			
+		}catch (Throwable oops) {
+			caught = oops.getClass();
+		}
+		
+		checkExceptions(expected, caught);
+	}
+	
+	/*
+	 * Erase his or her messages, which requires previous confirmation.
+	 * 
+	 * En este caso de uso se borran el message que desee el actor que se encuentra 
+	 * actualmente autentificado siempre y cuando pertenecezca a dicho actor, por lo tanto es accesible para cualquier 'actor'.
+	 * Para provocar el error, se intenta acceder mediante un usuario no autentificado.
+	 */
+	public void messageDelete(final String username, final Message message, final Class<?> expected){
+		
+		Class<?> caught = null;
+		
+		try {
+			
+			authenticate(username);
+			messageService.delete(message);
+			unauthenticate();
+			
+		} catch (final Throwable oops) {
+			
+			caught = oops.getClass();
+	
+		}	
+		checkExceptions(expected, caught);
+	}
+	
+
+	/*
+	 * List de messages that he or she's got and reply to them.
+	 * List de messages that he or she's got and forward to them.
+	 * 
+	 * En este caso de uso se listan los messages que pertenecen al actor que  se encuentra 
+	 * actualmente autentificado, por lo tanto es accesible para cualquier 'actor'.
+	 * Para provocar el error, se intenta acceder mediante con un usuario no autentificado.
+	 */
+	public void myListOfMessagesTest(final String username, final Class<?> expected) {
+		Class<?> caught = null;
+
+		try {
+
+			Actor actor;
+			actor = actorService.findByPrincipal();
+
+			this.authenticate(username);
+
+			this.messageService.checkIfActor();
+
+			for (final Actor a : this.actorService.findAll())
+				if (a.getUserAccount().getUsername().equals(username))
+					actor = a;
+
+			this.messageService.findAllByActor(actor.getId());
+
+			this.unauthenticate();
+
+		} catch (final Throwable oops) {
+
+			caught = oops.getClass();
+
+		}
+
+		this.checkExceptions(expected, caught);
+	}
+	
+	public void sendMessagesTest(final String usernameSender, final Actor actorRecipient, final String title, final String text, final String attachment, final Class<?> expected) {
+		Class<?> caught = null;
+
+		try {
+
+			this.authenticate(usernameSender);
+			
+			Actor actorSender = actorService.findOne(36);
+			Message message = messageService.create();
+			message.setText(text);
+			message.setTitle(title);
+			message.setAttachment(attachment);
+			
+			message.setActorRecipient(actorRecipient);
+			message.setActorSender(actorSender);
+			messageService.save(message);
+
+			this.unauthenticate();
+
+		} catch (final Throwable oops) {
+
+			caught = oops.getClass();
+
+		}
+
+		this.checkExceptions(expected, caught);
+	}
+	
+	
+	// Drivers
+	// ====================================================
+	
+	@Test
+	public void driverCreateMessage(){
+		
+		Object testingData1[][] = {
+			// Creación de un message si estoy autentificado como customer -> true
+			{
+			"customer1", null
+			},
+			// Creación de un message si no estoy autentificado -> false
+			{
+			null, IllegalArgumentException.class
+			}
+		};
+		
+		for(int i = 0; i<testingData1.length; i++){createTest((String) testingData1[i][0],
+					(Class<?>) testingData1[i][1]);
+		}
+	}
+	
+	@Test
+	public void driverSaveMessage(){
+			
+		Object testingData[][] = {
+			// Si existe el idRecipient -> true
+			{
+			"customer1", 37, null
+			},
+			// Si no existe el idRecipient -> false
+			{
+			"customer1", 989 , IllegalArgumentException.class},
+			{
+			// Si no estamos autentificados para guardar un message -> false
+			null, 37, IllegalArgumentException.class},
+			{
+			// Si no estamos autentificados para guardar un message y el idRecipient no existe -> false
+			null, 989 , IllegalArgumentException.class}
+			};
+		
+		for(int i = 0; i<testingData.length; i++){saveTest((String) testingData[i][0],
+			(int) testingData[i][1],(Class<?>) testingData[i][2]);
+		}
+	}
+
+	
+	@Test
+	public void driverDeleteMessage() {
+		final Object testingData[][] = {
+			// Message de su customer -> true
+			{
+				"admin" ,messageService.findOne(49), null
+			},
+			// Un message sin auth -> false
+			{
+				null, messageService.findOne(50), IllegalArgumentException.class
+			},
+			// Se indica un customer que no existe -> false
+			{
+				"customer" ,messageService.findOne(49), IllegalArgumentException.class
+			},
+			// Se intenta borrar un message que no pertenece al actor indicado -> false
+			{
+				"customer2", messageService.findOne(49), IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.messageDelete((String) testingData[i][0], (Message) testingData[i][1], (Class<?>) testingData[i][2]);
+	}
+	
+	@Test
+	public void driverMyListOfMessagesTest() {
+		final Object testingData[][] = {
+			// Mi lista si estoy autentificado como customer -> true
+			{
+				"customer1", null
+			},
+			// Mi lista si estoy autentificado como admin -> true
+			{
+				"admin", null
+			},
+			// Mi lista si no estoy autentificado -> false
+			{
+				null, IllegalArgumentException.class
+			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.myListOfMessagesTest((String) testingData[i][0], (Class<?>) testingData[i][1]);
+
+	}
+	
+	@Test
+	public void driverSendMessagesTest() {
+		final Object testingData[][] = {
+			// Todo correcto-> true
+			{
+				"customer1", actorService.findOne(37), "Hi m8", "Wasup brah, how u'doing?", "http://www.imagen.com.mx/assets/img/imagen_share.png", null
+			},
+			// No logueado-> false
+			{
+				null , actorService.findOne(37), "Hi m8", "Wasup brah, how u'doing?", "http://www.imagen.com.mx/assets/img/imagen_share.png", IllegalArgumentException.class
+			},
+			// Título vacio -> false
+			{
+				"customer1", actorService.findOne(37), null, "Wasup brah, how u'doing?", "http://www.imagen.com.mx/assets/img/imagen_share.png", IllegalArgumentException.class
+			},
+			// Cuerpo del mensaje vacio -> false
+			{
+				"customer1" , actorService.findOne(37), "Hi m8", null, "http://www.imagen.com.mx/assets/img/imagen_share.png", IllegalArgumentException.class
+			},
+			// attachment nulo -> true
+			{
+				"customer1" , actorService.findOne(37), "Hi m8", "Wasup brah, how u'doing?", null, null
+			},
+			// attachment que no es una URL -> false
+			{
+				"customer1" , actorService.findOne(37), "Hi m8", "Wasup brah, how u'doing?", "Hola", null
+			},
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.sendMessagesTest((String) testingData[i][0], (Actor) testingData[i][1], (String) testingData[i][2], (String) testingData[i][3], (String) testingData[i][4], (Class<?>) testingData[i][5]);
+
+	}
+	
+}
+

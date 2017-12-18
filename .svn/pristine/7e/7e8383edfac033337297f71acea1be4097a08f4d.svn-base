@@ -1,0 +1,20 @@
+# messages_es.properties
+#
+# Copyright (C) 2017 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+administrator.action.1	= Esta es la acción 1 del administrador
+administrator.action.2	= Esta es la acción 2 del administrador
+
+dashboard.ratio.requests = Ratio de peticiones
+dashboard.ratio.offers = Ratio de ofertas
+dashboard.avg.announcements = Media de peticiones y ofertas por usuario
+dashboard.avg.applications = Media de solicitudes por usuario
+dashboard.customer.more.accepted = Usuario/s con más solicitudes aceptadas
+dashboard.customer.more.denied = Usuario/s con más solicitudes denegadas
+dashboard.min.messages.sended	= Min mensajes enviados por actor
+dashboard.max.messages.sended	= Max mensajes enviados por actor
+dashboard.avg.messages.sended	= AVG mensajes enviados por actor

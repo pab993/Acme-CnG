@@ -1,0 +1,107 @@
+package services;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import domain.Message;
+
+import utilities.AbstractTest;
+
+@ContextConfiguration(locations = {
+	"classpath:spring/junit.xml"
+})
+@RunWith(SpringJUnit4ClassRunner.class)
+@Transactional
+public class MessageServiceTest extends AbstractTest {
+
+	// The SUT
+	// ====================================================
+	
+	@Autowired
+	private MessageService messageService;
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	// Tests
+	// ====================================================
+	
+	protected void saveTest(String username, int idRecipient, Class<?> expected) {
+		Class<?> caught;
+		
+		caught = null;
+		try{
+			
+			authenticate(username);
+			
+			Message message = messageService.create();
+			message.setText("test");
+			message.setTitle("test");
+			message.setAttachment("https://login.live.com");
+			
+			message.setActorRecipient(customerService.findOne(idRecipient));
+			messageService.save(message);
+			
+			unauthenticate();
+			
+		}catch (Throwable oops) {
+			caught = oops.getClass();
+		}
+		
+		checkExceptions(expected, caught);
+	}
+
+
+	protected void createTest(String username, Class<?> expected) {
+		// TODO Auto-generated method stub
+		Class<?> caught;
+		
+		caught = null;
+		try{
+			
+			authenticate(username);
+			messageService.create();
+			unauthenticate();
+			
+		}catch (Throwable oops) {
+			caught = oops.getClass();
+		}
+	}
+	
+	// Drivers
+	// ====================================================
+	
+	@Test
+	public void driver(){
+		
+		Object testingData1[][] = {
+			{"customer1", null},
+			{null, IllegalArgumentException.class}
+		};
+		
+		for(int i = 0; i<testingData1.length; i++){
+			createTest((String) testingData1[i][0],
+					(Class<?>) testingData1[i][1]);
+		}
+		testingData1 = null;
+		
+		Object testingData2[][] = {
+			{"customer1", 37, null},
+			{"customer1", 989 , IllegalArgumentException.class},
+			{null, 37, IllegalArgumentException.class},
+			{null, 989 , IllegalArgumentException.class}
+		};
+		
+		for(int i = 0; i<testingData2.length; i++){
+			saveTest((String) testingData2[i][0],
+					 (int) testingData2[i][1],
+					 (Class<?>) testingData2[i][2]);
+		}
+	}
+	
+}

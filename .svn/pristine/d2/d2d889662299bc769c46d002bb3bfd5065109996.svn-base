@@ -1,0 +1,18 @@
+# messages_es.properties
+#
+# Copyright (C) 2017 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+request.searchText			= Introduzca el título, descripción, lugar de origen o lugar de destino de una petición.
+request.search				= Buscar
+
+request.title				= Título
+request.description			= Descripcion
+request.moment				= Momento
+request.originXPlace		= Origen Coord.X
+request.originYPlace		= Origen Coord.Y
+request.destinyXPlace		= Destino Coord.X
+request.destinyYPlace		= Destino Coord.Y	

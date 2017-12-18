@@ -1,0 +1,48 @@
+package domain;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Embeddable;
+
+import org.hibernate.validator.constraints.NotBlank;
+
+@Embeddable
+@Access(AccessType.PROPERTY)
+public class Address{
+
+	//Construct
+	//====================================================
+
+	//Attributes
+	//====================================================
+
+	private String	place;
+	private Double	coordinateX;
+	private Double	coordinateY;
+
+
+	@NotBlank
+	public String getPlace() {
+		return this.place;
+	}
+
+	public void setPlace(String place) {
+		this.place = place;
+	}
+
+	public Double getCoordinateX() {
+		return this.coordinateX;
+	}
+
+	public void setCoordinateX(Double coordinateX) {
+		this.coordinateX = coordinateX;
+	}
+
+	public Double getCoordinateY() {
+		return this.coordinateY;
+	}
+
+	public void setCoordinateY(Double coordinateY) {
+		this.coordinateY = coordinateY;
+	}
+}

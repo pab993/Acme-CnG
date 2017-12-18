@@ -1,0 +1,32 @@
+<%@page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+
+<%@taglib prefix="jstl"	uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@taglib prefix="security" uri="http://www.springframework.org/security/tags"%>
+<%@taglib prefix="display" uri="http://displaytag.sf.net"%>
+<%@ taglib prefix="acme" tagdir="/WEB-INF/tags" %>
+
+<form:form action="announcement/customer/edit.do" modelAttribute="announcement">
+
+	<form:hidden path="id" />
+	<form:hidden path="version" />
+	<form:hidden path="ban" />
+
+	<fieldset >
+		<legend> <b> <spring:message code="announcement.name" /></b> </legend>
+		
+		<acme:textbox code="announcement.title" path="title"/>
+		<acme:textbox code="announcement.description" path="description"/>
+		<acme:textbox code="announcement.moment" path="moment"/>
+		<acme:textbox code="announcement.originPlace" path="originPlace"/>
+		<acme:textbox code="announcement.destinyPlace" path="destinyPlace"/>
+		
+	</fieldset>
+
+	<br />
+	
+	<acme:submit name="save" code="application.submit"/>
+	<acme:cancel url="welcome/index.do" code="Cancel"/>
+	
+</form:form>

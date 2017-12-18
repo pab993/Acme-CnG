@@ -1,0 +1,26 @@
+# messages.properties
+#
+# Copyright (C) 2017 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+announcement.name 			= Announcement
+
+announcement.title		 	= Title
+announcement.description 	= Description
+announcement.moment 		= Moment
+
+announcement.originPlace	= Origin place
+announcement.destinyPlace 	= Destiny place
+announcement.place			= Place
+announcement.coordinateX	= Coordinate X
+announcement.coordinateY	= Coordinate Y
+
+
+announcement.newApplication = New application
+announcement.listApplication	= Applications
+
+announcement.submit 		= Submit
+cancel 						= Cancel

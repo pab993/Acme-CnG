@@ -1,0 +1,169 @@
+
+package services;
+
+import java.util.Collection;
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
+
+import repositories.MessageRepository;
+import domain.Actor;
+import domain.Customer;
+import domain.Message;
+import forms.MessageForm;
+
+@Transactional
+@Service
+public class MessageService {
+
+	// Managed Repository 
+	// ====================================================================================
+
+	@Autowired
+	private MessageRepository	messageRepository;
+
+	// Managed Repository 
+	// ====================================================================================
+
+	@Autowired
+	private ActorService		actorService;
+
+
+	// Constructor methods
+	// ====================================================================================
+
+	public MessageService() {
+		super();
+	}
+
+	// Simple CRUDS methods 
+	// ====================================================================================
+
+	public Message findOne(int messageId) {
+		Assert.isTrue(messageId != 0);
+		Message result;
+
+		result = messageRepository.findOne(messageId);
+
+		return result;
+	}
+
+	public Collection<Message> findAll() {
+		Collection<Message> result;
+
+		result = messageRepository.findAll();
+
+		return result;
+	}
+
+	public Message create() {
+		Message result;
+		Actor principal;
+		Date createMoment;
+
+		principal = actorService.findByPrincipal();
+		Assert.notNull(principal);
+
+		createMoment = new Date(System.currentTimeMillis());
+		result = new Message();
+		result.setCreateMoment(createMoment);
+		result.setActorSender(principal);
+
+		return result;
+	}
+
+	public Message save(Message message) {
+		Assert.notNull(message);
+		Message result;
+		Actor principal;
+
+		principal = actorService.findByPrincipal();
+		Assert.notNull(principal);
+		Assert.notNull(message.getActorRecipient());
+		Assert.notNull(message.getActorSender());
+		Assert.notNull(message.getTitle());
+		Assert.notNull(message.getText());
+		result = messageRepository.save(message);
+
+		return result;
+	}
+
+	public void delete(Message message) {
+		Assert.notNull(message);
+		Actor actor;
+
+		actor = actorService.findByPrincipal();
+		Assert.notNull(actor);
+		Assert.isTrue(actor.getId() == message.getActorSender().getId(), "You cant delete this message");
+
+		messageRepository.delete(message);
+	}
+
+	// Others bussines methods
+	// ====================================================================================
+
+	public Collection<Message> findAllByActor(int actorId) {
+		Collection<Message> result;
+
+		result = messageRepository.findAllByActor(actorId);
+
+		return result;
+	}
+
+	public void checkIfActor(){
+		Actor principal;
+		
+		principal = actorService.findByPrincipal();
+		Assert.notNull(principal);
+		Assert.isInstanceOf(Actor.class, principal);
+	}
+
+	// Dashboard 
+	// ====================================================================================
+
+	public Integer minMessagesSended() {
+
+		return messageRepository.minMessagesSended();
+	}
+
+	public Integer maxMessagesSended() {
+
+		return messageRepository.maxMessagesSended();
+	}
+
+	public Integer avgMessagesSended() {
+
+		return messageRepository.avgMessagesSended();
+	}
+
+
+	//Ancillary methods
+	//====================================================================
+
+	@Autowired
+	private Validator	validator;
+
+
+	public Message reconstruct(MessageForm messageForm, BindingResult binding) {
+
+		Message messageRec = new Message();
+
+		messageRec.setActorSender(actorService.findByPrincipal());
+		messageRec.setCreateMoment(new Date(System.currentTimeMillis() - 10));
+
+		messageRec.setActorRecipient(messageForm.getActorRecipient());
+		messageRec.setTitle(messageForm.getTitle());
+		messageRec.setText(messageForm.getText());
+		messageRec.setAttachment(messageForm.getAttachment());
+
+		validator.validate(messageRec, binding);
+
+		return messageRec;
+	}
+}

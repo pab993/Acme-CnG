@@ -1,0 +1,185 @@
+package services;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import domain.Address;
+import domain.Announcement;
+import domain.Application;
+import domain.Customer;
+import domain.Offer;
+
+import utilities.AbstractTest;
+
+@ContextConfiguration(locations = {
+		"classpath:spring/junit.xml"
+	})
+@RunWith(SpringJUnit4ClassRunner.class)
+@Transactional
+public class ApplicationServiceTest extends AbstractTest{
+
+	// The SUT
+	//====================================================
+
+	@Autowired
+	private ApplicationService	applicationService;
+	
+	@Autowired
+	private AnnouncementService announcementService;
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	
+	// Tests
+	//====================================================
+	
+	public void applicationCreateTest(final String username, final Announcement announcement, final Class<?> expected) {
+		
+			Class<?> caught = null;
+		
+			try {
+		
+				this.authenticate(username);
+		
+		
+				final Application application = applicationService.create(announcement);
+		
+		
+				this.unauthenticate();
+		
+			} catch (final Throwable oops) {
+		
+				caught = oops.getClass();
+		
+			}
+		
+			this.checkExceptions(expected, caught);
+		}
+	
+	
+	public void applicationSaveTest(final String username, final Announcement announcement, final Class<?> expected) {
+		
+		Class<?> caught = null;
+	
+		try {
+	
+			this.authenticate(username);
+			
+			final Application application = applicationService.create(announcement);
+			
+			applicationService.save(application);
+	
+			this.unauthenticate();
+	
+		} catch (final Throwable oops) {
+	
+			caught = oops.getClass();
+	
+		}
+	
+		this.checkExceptions(expected, caught);
+	}
+	
+	
+	// Drivers
+	// ====================================================
+	
+	
+	@Test
+	public void driverApplicationCreate() {
+	
+		final Object testingData[][] = {
+			// Creación con customer y propiedades correctas -> true
+			{
+				"customer1", announcementService.findOne(42), null
+			},
+			// Creación con customer1 y un announcmente que el mismo ha puesto -> false
+//			{
+//				"customer1", announcementService.findOne(40), IllegalArgumentException.class
+//			},
+//			// Creación con usuario no autentificado -> false
+//			{
+//				null, "title", "description", date, origin, destination, "origin address", 1.30007, -113.61082, "destination address", 17.85281, -10.87204, IllegalArgumentException.class
+//			},
+//			// Creación con fecha superior a la actual -> false
+//			{
+//				"customer3", "title", "description", date2, origin, destination, "origin address", 1.30007, -113.61082, "destination address", 17.85281, -10.87204, IllegalArgumentException.class
+//			}
+	};
+		
+		for (int i = 0; i < testingData.length; i++)
+			this.applicationCreateTest((String) testingData[i][0], (Announcement) testingData[i][1], (Class<?>) testingData[i][2]);
+		}
+	
+	
+	@Test
+	public void driverApplicationSave() {
+		final Object testingData[][] = {
+			// application a un announcement de un customer -> true
+			{
+				"customer1" ,announcementService.findOne(42), null
+			},
+			// crear una application en un announcement sin estar logueado -> false
+			{
+				null, announcementService.findOne(40), IllegalArgumentException.class
+			},
+			// intentar borrar una offer que no te pertenece -> false
+//			{
+//				"customer4", offerService.findOne(44), IllegalArgumentException.class
+//			}
+		};
+		for (int i = 0; i < testingData.length; i++)
+			this.applicationSaveTest((String) testingData[i][0], (Announcement) testingData[i][1], (Class<?>) testingData[i][2]);
+	}
+
+}
+//	@Test
+//	public void driverOfferFindOne() {
+//		final Object testingData[][] = {
+//			// Id de una offer -> true
+//			{
+//				44, null
+//			},
+//			// Una offer con id 0 -> false
+//			{
+//				0, IllegalArgumentException.class
+//			},
+//			// Una id que no es de una offer -> false
+//			{
+//				8, IllegalArgumentException.class
+//			}
+//		};
+//		for (int i = 0; i < testingData.length; i++)
+//			this.offerFindOne((int) testingData[i][0], (Class<?>) testingData[i][1]);
+//	}
+//	
+//	
+//	@Test
+//	public void driverOfferDelete() {
+//		final Object testingData[][] = {
+//			// offer de su customer -> true
+//			{
+//				"customer4" ,offerService.findOne(45), null
+//			},
+////			// Una offer con id 0 -> false
+//			{
+//				null, offerService.findOne(45), IllegalArgumentException.class
+//			},
+////			// intentar borrar una offer que no te pertenece -> false
+//			{
+//				"customer4", offerService.findOne(44), IllegalArgumentException.class
+//			}
+//		};
+//		for (int i = 0; i < testingData.length; i++)
+//			this.offerDelete((String) testingData[i][0], (Offer) testingData[i][1], (Class<?>) testingData[i][2]);
+//	}
+//}

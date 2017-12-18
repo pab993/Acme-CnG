@@ -1,0 +1,33 @@
+package repositories;
+
+import java.util.Collection;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import domain.Request;
+
+@Repository
+public interface RequestRepository extends JpaRepository<Request, Integer>{
+	
+	@Query("select r from Request r where r.customer.id=?1")
+	Collection<Request> findAllByCustomer(int id);
+	
+	@Query("select r from Request r where r.customer.id!=?1 and r.ban = false")
+	Collection<Request> findAllByNotCustomer(int id);
+	
+	@Query("select r from Request r where (r.title like %?1% or r.description like %?1% or r.originPlace.place like %?1% or r.destinyPlace.place like %?1%) and (r.ban = false or r.customer.id = ?2)")
+	Collection<Request> searchRequestByWords(String keyWord, int id);
+
+	//Ratio of request
+	@Query("select 1.0*count(r)/(select count(a) from Announcement a) from Request r")
+	Double ratioOfRequests();
+	
+	@Query("select r from Request r where r.ban = false or r.customer.id = ?1")
+	Collection<Request> findAllFilter(int id);
+	
+	@Query("select r from Request r where r.title like %?1% or r.description like %?1% or r.originPlace.place like %?1% or r.destinyPlace.place like %?1%")
+	Collection<Request> searchRequestByWordsAdmin(String keyWord);
+
+}
